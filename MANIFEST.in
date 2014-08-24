@@ -1,0 +1,9 @@
+include MANIFEST.in
+include Makefile
+include INSTALL
+include LICENSE
+include README.md
+include frimm.spec
+recursive-include frimm *.py
+include scripts/frimm
+include data/window.ui data/frimm.desktop data/icons/*
