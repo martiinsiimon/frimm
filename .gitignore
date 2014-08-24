@@ -1,2 +1,4 @@
 assets/
 frimm-old/
+*/__pycache__/
+*.pyc
