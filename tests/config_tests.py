@@ -24,7 +24,7 @@ class TestConfiguration(unittest.TestCase):
     def test_getter(self):
         self.config.configuration['test2'] = 20
         self.assertEqual(self.config['test2'], 20)
-    
+
     def test_store_restore(self):
         self.config['print_results'] = 1
         self.config['measure'] = 1

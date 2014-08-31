@@ -12,7 +12,7 @@ class Configuration(object):
         self.configuration = {}
         self.config_dir = config_dir
         self.config_file = self.config_dir + 'config.json'
-        
+
         if not os.path.isdir(self.config_dir):
             os.mkdir(self.config_dir)
 
