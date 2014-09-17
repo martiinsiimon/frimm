@@ -33,4 +33,4 @@ rpm: tarball
 	mv ~/rpmbuild/RPMS/noarch/* dist/
 
 run:
-	cd scripts ; $(PYTHRUN) frimm ; cd ..
+	$(PYTHRUN) scripts/frimm
