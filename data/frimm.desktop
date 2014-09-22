@@ -1,0 +1,12 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=FRIMM
+Name[en_GB]=FRIMM
+Comment=Framework for image manipulation. Easy framework writen in Python for applying self writen filters to variable image sources.
+Comment[en_GB]=Framework for image manipulation. Easy framework writen in Python for applying self writen filters to variable image sources.
+Exec=frimm
+Terminal=false
+Type=Application
+Icon=frimm
+StartupNotify=true
+Categories=Application;
