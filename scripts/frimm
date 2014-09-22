@@ -1,24 +1,31 @@
 #!/usr/bin/env python2
 
 """
-
+FRIMM is FRamework for IMage Manipulation. The main purpose is to provide
+easy enviroment to write own modular filters and apply them on various
+sources. It's still in development.
 """
 __author__ = "Martin Simon <martiin.siimon@gmail.com>"
 
 # try to import local files first
 try:
-        import sys
-        path = '../frimm'
-        sys.path.append(path)
-        module = __import__('window')
-        reload(module)
-        from window import MainWindow
-        del sys.path[-1]
-except ImportError:
-        from frimm.window import MainWindow
+    import sys
+    path = '../frimm'
+    sys.path.append(path)
+    path = './frimm'
+    sys.path.append(path)
+
+    module = __import__('window')
+    reload(module)
+    from window import MainWindow
+
+    del sys.path[-1]
+    del sys.path[-1]
+except KeyError:
+    from frimm.window import MainWindow
 
 from gi.repository import Gtk
 
 if __name__ == '__main__':
-    main = MainWindow()
+    mainwindow = MainWindow()
     Gtk.main()
