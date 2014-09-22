@@ -159,6 +159,8 @@ class Filters(object):
         and its end, if requested.
         """
         if self.active:
+            start_time = 1
+            end_time = 0
             if self.config['measure']:
                 start_time = time.time()
             self.active.source(input_img, output_img)
