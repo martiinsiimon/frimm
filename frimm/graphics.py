@@ -2,6 +2,8 @@
 Graphics module. Consists of object which represent graphic objects.
 """
 import cairo
+import numpy
+
 
 ARGB=0
 RGB24=1
@@ -11,82 +13,28 @@ COLOR_MODEL = \
 
 OUTPUT_COLOR_MODEL=RGB24
 
-class Pixel(object):
-    '''
-    '''
-    def __init__(self, r=0, g=0, b=0, a=0, v=0):
-        self.red = r
-        self.green = g
-        self.blue = b
-        self.alpha = v
-        self.value = v
-    
-    @property
-    def r(self):
-        return self.red
-
-    @r.setter
-    def r(self, value):
-        self.red = int(round(value))
-
-    @property
-    def g(self):
-        return self.green
-
-    @g.setter
-    def g(self, value):
-        self.green = int(round(value))
-
-    @property
-    def b(self):
-        return self.blue
-
-    @b.setter
-    def b(self, value):
-        self.blue = int(round(value))
-
-    @property
-    def a(self):
-        return self.alpha
-
-    @a.setter
-    def a(self, value):
-        self.alpha = int(round(value))
-
-    @property
-    def v(self):
-        return self.value
-        
-    @v.setter
-    def v(self, value):
-        self.value = int(round(value))
-        self.r = int(round(value))
-        self.g = int(round(value))
-        self.b = int(round(value))
-        self.a = int(round(value))
-        
 
 class Frame(object):
     '''
     '''
-    def __init__(self, data=None):
-        if data:
-            self.width = data.get_width()
-            self.height = data.get_height()
-            self.data = self._from_cairo_to_internal(data)
-        else:
-            self.data = []
-            self.width = 0
-            self.height = 0
-            
-        self.dirty = False
+    def __init__(self, data):
+        self.width = data.get_width()
+        self.height = data.get_height()
+        self.data = self._from_cairo_to_internal(data)
+        self.color_format = data.get_format()
+        self.pixel_width = COLOR_MODEL[self.color_format]['pixel_width']
         
+        self.r_offset = COLOR_MODEL[self.color_format]['r']
+        self.g_offset = COLOR_MODEL[self.color_format]['g']
+        self.b_offset = COLOR_MODEL[self.color_format]['b']
+        
+        self.dirty = False
 
     def __getitem__(self, index):
         return self.data[index]
-    
+
     def __setitem__(self, index, value):
-        self.data.insert(index, value)
+        self.data[index] = value
         self.dirty = True
 
     def _from_cairo_to_internal(self, input_data):
@@ -94,52 +42,18 @@ class Frame(object):
         Convert given cairo data to internal data
         '''
         data = input_data.get_data()
-        color_format = input_data.get_format()
-        pixel_width = COLOR_MODEL[color_format]['pixel_width']
-        output = []
-
-        total_width = self.width * pixel_width
-        
-        if color_format  == ARGB:
-            for y in range(0, self.height):
-                for x in range(0, total_width, pixel_width):
-                    pix = Pixel()
-                    pix.r = ord(data[y * total_width + x + COLOR_MODEL[color_format]['r']])
-                    pix.g = ord(data[y * total_width + x + COLOR_MODEL[color_format]['g']])
-                    pix.b = ord(data[y * total_width + x + COLOR_MODEL[color_format]['b']])
-                    pix.a = ord(data[y * total_width + x + COLOR_MODEL[color_format]['a']])
-                    output.insert(y * self.width + x/pixel_width, pix)
-        elif color_format == RGB24:
-            for y in range(0, self.height):
-                for x in range(0, total_width, pixel_width):
-                    pix = Pixel()
-                    pix.r = ord(data[y * total_width + x + COLOR_MODEL[color_format]['r']])
-                    pix.g = ord(data[y * total_width + x + COLOR_MODEL[color_format]['g']])
-                    pix.b = ord(data[y * total_width + x + COLOR_MODEL[color_format]['b']])
-                    output.insert(y * self.width + x/pixel_width, pix)
-        else:
-            assert RuntimeError, 'No other color format is supported!'
-        
-        return output
+        return numpy.array(data)
 
     def update_cairo(self, data_pointer, format_pointer):
         '''
         Update cairo data from internal buffer to the given pointer
         '''
         pixel_width = COLOR_MODEL[OUTPUT_COLOR_MODEL]['pixel_width']
-        
-        for y in range(0, self.height):
-            for x in range(0, self.width):
-                pix = self[y * self.width + x]
-
-                data_pointer[y * self.width * pixel_width + x * pixel_width + COLOR_MODEL[OUTPUT_COLOR_MODEL]['r']] = chr(pix.r)
-                data_pointer[y * self.width * pixel_width + x * pixel_width + COLOR_MODEL[OUTPUT_COLOR_MODEL]['g']] = chr(pix.g)
-                data_pointer[y * self.width * pixel_width + x * pixel_width + COLOR_MODEL[OUTPUT_COLOR_MODEL]['b']] = chr(pix.b)
-                data_pointer[y * self.width * pixel_width + x * pixel_width + COLOR_MODEL[OUTPUT_COLOR_MODEL]['a']] = chr(255) #  unused
+        print "DBG: update_cairo"
         
         self.dirty = False
 
-        format_pointer = OUTPUT_COLOR_MODEL
+        data_pointer[:] = self.data.data
 
     def get_cairo_data(self, color_format):
         '''
