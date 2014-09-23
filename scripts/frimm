@@ -21,7 +21,7 @@ try:
 
     del sys.path[-1]
     del sys.path[-1]
-except KeyError:
+except ImportError:
     from frimm.window import MainWindow
 
 from gi.repository import Gtk
