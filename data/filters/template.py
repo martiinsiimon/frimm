@@ -29,10 +29,17 @@ def process(input_img, output_img):
     g_out_off = out_img.g_offset
     b_out_off = out_img.b_offset
 
+    # Local stored data are faster!
+    indata = in_img.data
+    outdata = out_img.data
+    
+    # Initialize variable before loop = faster code
+    pix_index = 0
+
     # Use xrange rather than range, it's more efficient
     for y in xrange(height):
         for x in xrange(width):
             pix_index = y * width * pix_w + x * pix_w 
-            output_img[pix_index + r_out_off] = 0  #  B
-            output_img[pix_index + g_out_off] = 0  #  G
-            output_img[pix_index + b_out_off] = 0  #  R
+            outdata[pix_index + r_out_off] = 0  #  R
+            outdata[pix_index + g_out_off] = 0  #  G
+            outdata[pix_index + b_out_off] = 0  #  B

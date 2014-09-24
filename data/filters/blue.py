@@ -17,9 +17,13 @@ def process(in_img, out_img):
     g_out_off = out_img.g_offset
     b_out_off = out_img.b_offset
 
+    pix_index = 0
+    indata = in_img.data
+    outdata = out_img.data
+
     for y in xrange(height):
         for x in xrange(width):
             pix_index = y * width * pix_w + x * pix_w 
-            out_img[pix_index + r_out_off] = 0
-            out_img[pix_index + g_out_off] = 0
-            out_img[pix_index + b_out_off] = in_img[pix_index + b_in_off]
+            outdata[pix_index + r_out_off] = 0
+            outdata[pix_index + g_out_off] = 0
+            outdata[pix_index + b_out_off] = indata[pix_index + b_in_off]
