@@ -12,12 +12,27 @@ as you want, it's not limited at all.'''
 # Filter itself. Please, use this function predefined interface,
 # including name and parameters with its order
 def process(input_img, output_img):
-    # Here comes the filter body
-    width = input_img.width
-    height = input_img.height
+    # width and height of source and taget images
+    width = in_img.width
+    height = in_img.height
+    
+    # Width of pixels, e.g. ARGB has pixel of width 4 (bytes)
+    pix_w = in_img.pixel_width
+    
+    # Offsets for color channels of input image
+    r_in_off = in_img.r_offset
+    g_in_off = in_img.g_offset
+    b_in_off = in_img.b_offset
+    
+    # Offsets for color channels of output image
+    r_out_off = out_img.r_offset
+    g_out_off = out_img.g_offset
+    b_out_off = out_img.b_offset
 
-    for y in range(height):
-        for x in range(width):
-            output_img[y * width + x].r = 0  #  B
-            output_img[y * width + x].g = 0  #  G
-            output_img[y * width + x].b = 0  #  R
+    # Use xrange rather than range, it's more efficient
+    for y in xrange(height):
+        for x in xrange(width):
+            pix_index = y * width * pix_w + x * pix_w 
+            output_img[pix_index + r_out_off] = 0  #  B
+            output_img[pix_index + g_out_off] = 0  #  G
+            output_img[pix_index + b_out_off] = 0  #  R
