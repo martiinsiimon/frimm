@@ -2,7 +2,7 @@
 Graphics module. Consists of object which represent graphic objects.
 """
 import cairo
-import numpy
+import array
 
 
 ARGB=0
@@ -30,30 +30,22 @@ class Frame(object):
         
         self.dirty = False
 
-    def __getitem__(self, index):
-        return self.data[index]
-
-    def __setitem__(self, index, value):
-        self.data[index] = value
-        self.dirty = True
-
     def _from_cairo_to_internal(self, input_data):
         '''
         Convert given cairo data to internal data
         '''
         data = input_data.get_data()
-        return numpy.array(data)
+        return array.array('B', data.__str__())
 
     def update_cairo(self, data_pointer, format_pointer):
         '''
         Update cairo data from internal buffer to the given pointer
         '''
         pixel_width = COLOR_MODEL[OUTPUT_COLOR_MODEL]['pixel_width']
-        print "DBG: update_cairo"
         
         self.dirty = False
 
-        data_pointer[:] = self.data.data
+        data_pointer[:] = buffer(self.data)
 
     def get_cairo_data(self, color_format):
         '''
@@ -66,9 +58,6 @@ class Image(object):
     """
     Image object. This class is meant to perform store and load file
     operations of image files.
-    TODO:
-        convertColorModel()
-        dumpImageInformation()
     """
 
     def __init__(self, filename, filetype):
