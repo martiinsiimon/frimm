@@ -27,5 +27,5 @@ except ImportError:
 from gi.repository import Gtk
 
 if __name__ == '__main__':
-    mainwindow = MainWindow()
+    mainwindow = MainWindow(exe_path=__file__)
     Gtk.main()

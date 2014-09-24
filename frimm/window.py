@@ -3,9 +3,9 @@
 """
 import os
 import sys
-import cairo
-from gi.repository import Gtk
 
+from gi.repository import Gtk
+import cairo
 from graphics import Image
 from config import Configuration
 from filters import Filters
@@ -18,14 +18,14 @@ class MainWindow(object):
          fix todos
     """
 
-    def __init__(self):
+    def __init__(self, exe_path):
         if os.path.exists('../data/window.ui'):
             self.gladefile = '../data/window.ui'
         elif os.path.exists('data/window.ui'):
             self.gladefile = 'data/window.ui'
         else:
             path = os.path.abspath(
-                os.path.join(__file__, os.path.pardir, os.path.pardir))
+                os.path.join(exe_path, os.path.pardir, os.path.pardir))
             if path is '/':  # in case the path is /bin/frimm
                 path = '/usr'
             self.gladefile = path + '/share/frimm/ui/window.ui'
@@ -42,7 +42,7 @@ class MainWindow(object):
             self.window.set_icon_from_file('data/icons/frimm.png')
         else:
             path = os.path.abspath(
-                os.path.join(__file__, os.path.pardir, os.path.pardir))
+                os.path.join(exe_path, os.path.pardir, os.path.pardir))
             if path is '/':
                 path = '/usr'
             self.window.set_icon_from_file(
