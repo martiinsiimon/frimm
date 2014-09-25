@@ -3,7 +3,6 @@
 FRIMM module containing main window class
 """
 import os
-import sys
 
 from gi.repository import Gtk
 from graphics import Image
@@ -14,8 +13,8 @@ import time
 
 class MainWindow(object):
     """
-    TODO
-        finish signal handlers
+    MainWindow class handles GUI of FRIMM. It does not contain any functional
+    parts
     """
 
     def __init__(self, exe_path):
@@ -188,9 +187,28 @@ class MainWindow(object):
                 'You need to execute filtering before exporting results!')
             return
 
-        # TODO add filechooser dialog
-        self.result_image.store()
-        print("DBG: on_export_button_clicked")
+        dialog = Gtk.FileChooserDialog(
+            'Save file', self.window,
+            Gtk.FileChooserAction.SAVE,
+            (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
+             Gtk.STOCK_SAVE, Gtk.ResponseType.OK))
+
+        filter_png = Gtk.FileFilter()
+        filter_png.set_name('PNG Image')
+        filter_png.add_mime_type('image/png')
+        dialog.add_filter(filter_png)
+
+        res = dialog.run()
+        if res == Gtk.ResponseType.OK:
+            if dialog.get_filter().get_name() == 'PNG Image':
+                filename = dialog.get_filename()
+                if not filename.endswith('.png'):
+                    filename = "%s.png" % filename
+                self.result_image.store(filename)
+            else:
+                pass
+
+        dialog.destroy()
 
     def on_load_button_clicked(self, button):
         dialog = Gtk.FileChooserDialog(
