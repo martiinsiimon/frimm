@@ -5,53 +5,50 @@ import cairo
 import array
 
 
-ARGB=0
-RGB24=1
+ARGB = 0
+RGB24 = 1
 COLOR_MODEL = \
-    {0: {'name' : 'ARGB', 'pixel_width' : 4, 'a' : 3, 'r' : 2, 'g' : 1, 'b' : 0},\
-     1: {'name' : 'RGB24', 'pixel_width' : 4, 'a' : 3, 'r' : 2, 'g' : 1, 'b' : 0}}
+    {0: {'name': 'ARGB', 'pixel_width': 4, 'a': 3, 'r': 2, 'g': 1, 'b': 0},
+     1: {'name': 'RGB24', 'pixel_width': 4, 'a': 3, 'r': 2, 'g': 1, 'b': 0}}
 
-OUTPUT_COLOR_MODEL=RGB24
+OUTPUT_COLOR_MODEL = RGB24
 
 
 class Frame(object):
-    '''
-    '''
+    """
+    Object representing image frame. Its used in image, video and camera stream
+    """
+
     def __init__(self, data):
         self.width = data.get_width()
         self.height = data.get_height()
         self.data = self._from_cairo_to_internal(data)
         self.color_format = data.get_format()
         self.pixel_width = COLOR_MODEL[self.color_format]['pixel_width']
-        
+
         self.r_offset = COLOR_MODEL[self.color_format]['r']
         self.g_offset = COLOR_MODEL[self.color_format]['g']
         self.b_offset = COLOR_MODEL[self.color_format]['b']
-        
+
         self.dirty = False
 
-    def _from_cairo_to_internal(self, input_data):
-        '''
+    @staticmethod
+    def _from_cairo_to_internal(input_data):
+        """
         Convert given cairo data to internal data
-        '''
+        :param input_data: input cairo buffer
+        """
         data = input_data.get_data()
         return array.array('B', data.__str__())
 
-    def update_cairo(self, data_pointer, format_pointer):
-        '''
+    def update_cairo(self, data_pointer):
+        """
         Update cairo data from internal buffer to the given pointer
-        '''
-        pixel_width = COLOR_MODEL[OUTPUT_COLOR_MODEL]['pixel_width']
-        
+        :param data_pointer: pointer to cairo buffer
+        """
         self.dirty = False
 
         data_pointer[:] = buffer(self.data)
-
-    def get_cairo_data(self, color_format):
-        '''
-        Return converted data to cairo format
-        '''
-        return self._from_internal_to_cairo(self.data, color_format)
 
 
 class Image(object):
@@ -86,6 +83,7 @@ class Image(object):
         """
         Store this object as image of type PNG. If no new filename is
         provided, old filename extended with '_new' wil be used
+        :param new_filename: name of output file
         """
         if self.cairo_image_surface:
             if not new_filename:
@@ -98,12 +96,19 @@ class Image(object):
 
     @property
     def cairo_data(self):
+        """
+        Property returning updated cairo buffer
+        """
         if self.data.dirty:
-            self.data.update_cairo(self.cairo_image_surface.get_data(), self.cairo_image_surface.get_format())
+            self.data.update_cairo(self.cairo_image_surface.get_data())
         return self.cairo_image_surface
-    
+
     @cairo_data.setter
     def cairo_data(self, value):
+        """
+        Property setter for cairo_data
+        :param value: New cairo buffer to be set
+        """
         self.cairo_image_surface = value
 
 

@@ -19,7 +19,7 @@ class Filter(object):
     details, if provided)
     """
 
-    def __init__(self, name='', lang='', source='', desc='', author='', \
+    def __init__(self, name='', lang='', source='', desc='', author='',
                  mail=''):
         self.name = name
         self.lang = lang
@@ -33,8 +33,8 @@ class Filter(object):
         Dump information about object in a single string
         """
         return "%s (%s) - %s <%s>: %s\n" % \
-            (self.name, self.lang, self.author_name, \
-             self.author_mail, self.description)
+               (self.name, self.lang, self.author_name,
+                self.author_mail, self.description)
 
 
 class Filters(object):
@@ -43,7 +43,6 @@ class Filters(object):
     filters from predefined location, create list of them, provide
     information of specific filter and execute code of specific filter.
     TODO:
-        execute_active()
         test_refresh() -- tests
         test_execute_active() -- tests
     """
@@ -87,6 +86,7 @@ class Filters(object):
         """
         Add a new filter. Filter can be added in container using standard
         setter or via this method
+        :param filt: Filter to be added
         """
         if isinstance(filt, Filter):
             self.filters[filt.name] = filt
@@ -124,39 +124,45 @@ class Filters(object):
         configuration, given in object initialization. Parses filters
         one by one and adding all correct filters to the list
         """
-        def add_python_filters(self, path, files):
+
+        def add_python_filters(filters_path, filters):
             """
             Parse and add Python filters.
+            :param filters:
+            :param filters_path:
             """
-            py_files = [f for f in files if re.match(r'.*\.py$', f)]
+            py_files =\
+                [filt for filt in filters if re.match(r'.*\.py$', filt)]
 
-            sys.path.append(path)
+            sys.path.append(filters_path)
             for filee in py_files:
                 try:
                     module = __import__(filee.strip('.py'))
                     reload(module)
                     self.add(
-                        Filter(name=module.__filter_name__,\
-                        lang='Python', source=module.process,\
-                        desc=module.__filter_description__,\
-                        author=module.__author_name__,\
-                        mail=module.__author_mail__))
+                        Filter(name=module.__filter_name__,
+                               lang='Python', source=module.process,
+                               desc=module.__filter_description__,
+                               author=module.__author_name__,
+                               mail=module.__author_mail__))
                 except ImportError:
                     pass
             del sys.path[-1]
 
         path = self.config['filter_path']
-        files = [f for f in os.listdir(path) if\
-            os.path.isfile(os.path.join(path, f))\
-            and not re.match('^template', f)]
+        files = [f for f in os.listdir(path) if
+                 os.path.isfile(os.path.join(path, f))
+                 and not re.match('^template', f)]
 
         # parse Python files
-        add_python_filters(self, path, files)
+        add_python_filters(path, files)
 
     def execute_active(self, input_img, output_img):
         """
         Execute active filter. It also measures time between filter call
         and its end, if requested.
+        :param output_img: pointer to output file
+        :param input_img: pointer of input file
         """
         if self.active:
             start_time = 1

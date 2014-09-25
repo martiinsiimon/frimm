@@ -1,4 +1,5 @@
 """
+Package pseudomodule
 """
 __all__ = ['window', 'graphics', 'filters', 'config']
 __author__ = 'Martin Simon <martiin.siimon@gmail.com>'

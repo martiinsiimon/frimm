@@ -1,21 +1,21 @@
 # -*- coding: UTF-8 -*-
 """
+FRIMM module containing main window class
 """
 import os
 import sys
 
 from gi.repository import Gtk
-import cairo
 from graphics import Image
 from config import Configuration
 from filters import Filters
 import time
 
+
 class MainWindow(object):
     """
-    TODO:
+    TODO
         finish signal handlers
-         fix todos
     """
 
     def __init__(self, exe_path):
@@ -55,25 +55,32 @@ class MainWindow(object):
         self.config = Configuration()
         self.config.restore()
         self.filters = Filters(self.config)
-        
-        self.filter_author_label = self.builder.get_object('filter_author_label')
-        self.filter_description_textview = self.builder.get_object('filter_description_textview')
-        self.filter_details_box = self.builder.get_object('filter_details_box')
-        self.statusbar = self.builder.get_object('statusbar')
-        self.statusbar_context_id = self.statusbar.get_context_id('statusbar_note')
-        
+
+        self.filter_author_label = \
+            self.builder.get_object('filter_author_label')
+        self.filter_description_textview = \
+            self.builder.get_object('filter_description_textview')
+        self.filter_details_box = \
+            self.builder.get_object('filter_details_box')
+        self.statusbar = \
+            self.builder.get_object('statusbar')
+        self.statusbar_context_id = \
+            self.statusbar.get_context_id('statusbar_note')
+        self.comboboxfilter = \
+            self.builder.get_object('comboboxfilter')
+        self.filters_liststore = None
+
         self.update_filters_combobox()
 
         self.window.show_all()
 
-    def on_main_window_destroy(self, window):
-        print('DBG: on_main_window_destroy')
-        sys.exit()
+    @staticmethod
+    def on_main_window_destroy(window):
+        Gtk.main_quit()
 
     def on_comboboxfilter_changed(self, combo):
-        print("DBG: on_comboboxfilter_changed")
         tree_iter = combo.get_active_iter()
-        if tree_iter != None:
+        if tree_iter is not None:
             model = combo.get_model()
             selected_name, selected_key = model[tree_iter]
             if selected_key == 'no_filter':
@@ -81,7 +88,8 @@ class MainWindow(object):
                 self.filter_details_box.set_visible(False)
             else:
                 self.filters.active = self.filters[selected_name]
-                self.filter_author_label.set_text(self.filters.active.author_name)
+                self.filter_author_label.set_text(
+                    self.filters.active.author_name)
                 textbuffer = Gtk.TextBuffer()
                 textbuffer.set_text(self.filters.active.description)
                 self.filter_description_textview.set_buffer(textbuffer)
@@ -105,19 +113,17 @@ class MainWindow(object):
         else:
             scale = win_h / float(img_h)
 
-        cairo_context.translate((win_w / 2.0) - ((img_w * scale) / 2.0), (win_h / 2.0) - ((img_h * scale) / 2.0))
+        cairo_context.translate(
+            (win_w / 2.0) - ((img_w * scale) / 2.0),
+            (win_h / 2.0) - ((img_h * scale) / 2.0))
         cairo_context.scale(scale, scale)
 
         cairo_context.set_source_surface(self.result_image.cairo_data, 0, 0)
         cairo_context.paint()
 
-        print("DBG: on_result_area_draw")
-
     def on_original_area_press_event(self, drawing_area, button):
         if not self.original_image:
             return
-
-        print("DBG: on_original_area_button_press_event")
 
     def on_original_area_draw(self, screen, cairo_context):
         if not self.original_image:
@@ -137,61 +143,61 @@ class MainWindow(object):
         else:
             scale = win_h / float(img_h)
 
-        cairo_context.translate((win_w / 2.0) - ((img_w * scale) / 2.0), (win_h / 2.0) - ((img_h * scale) / 2.0))
+        cairo_context.translate(
+            (win_w / 2.0) - ((img_w * scale) / 2.0),
+            (win_h / 2.0) - ((img_h * scale) / 2.0))
         cairo_context.scale(scale, scale)
 
         cairo_context.set_source_surface(self.original_image.cairo_data, 0, 0)
         cairo_context.paint()
 
-        print("DBG: on_original_area_draw")
-
     def on_quit_button_clicked(self, button):
-        print("DBG: on_quit_button_clicked")
-        sys.exit()
+        Gtk.main_quit()
 
     def on_proceed_button_clicked(self, button):
         if not self.original_image:
-            self.update_statusbar('You need to load a source before filter execution!')
+            self.update_statusbar(
+                'You need to load a source before filter execution!')
             return
-        
+
         if not self.filters.active:
             self.update_statusbar('You need to set filter first!')
             return
-        
-        self.result_image = Image(filename=self.original_image.filename, filetype='png')
-        
+
+        self.result_image = \
+            Image(filename=self.original_image.filename, filetype='png')
+
         self.result_image.cairo_image_surface.flush()
-        
-        total_time = self.filters.execute_active(self.original_image.data, self.result_image.data)
+
+        total_time = self.filters.execute_active(self.original_image.data,
+                                                 self.result_image.data)
         self.result_image.data.dirty = True
-        
+
         self.result_image.cairo_image_surface.mark_dirty()
         win = self.builder.get_object('result_area').get_window()
         win.invalidate_rect(None, False)
 
         msg = 'Filter \'%s\' executed.' % self.filters.active.name
         if self.config['measure']:
-            msg += ' Total time: %f' % total_time 
+            msg += ' Total time: %f' % total_time
         self.update_statusbar(msg)
-
-        print("DBG: on_proceed_button_clicked")
-        
 
     def on_export_button_clicked(self, button):
         if not self.result_image:
-            self.update_statusbar('You need to execute filtering before exporting results!')
+            self.update_statusbar(
+                'You need to execute filtering before exporting results!')
             return
-            
+
         # TODO add filechooser dialog
         self.result_image.store()
         print("DBG: on_export_button_clicked")
 
     def on_load_button_clicked(self, button):
-        dialog =\
-            Gtk.FileChooserDialog('Open file', self.window,\
-            Gtk.FileChooserAction.OPEN,\
-            (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,\
-            Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
+        dialog = Gtk.FileChooserDialog(
+            'Open file', self.window,
+            Gtk.FileChooserAction.OPEN,
+            (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
+             Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
 
         filter_png = Gtk.FileFilter()
         filter_png.set_name('PNG Image')
@@ -202,18 +208,21 @@ class MainWindow(object):
         if res == Gtk.ResponseType.OK:
             if dialog.get_filter().get_name() == 'PNG Image':
                 start_time = time.time()
-                self.original_image =\
+                self.original_image = \
                     Image(filename=dialog.get_filename(), filetype='png')
                 end_time = time.time()
-                self.update_statusbar("Total time to load: %f" % (end_time - start_time))
-                # TODO add statusbar info
+                self.update_statusbar(
+                    "Total time to load: %f" % (end_time - start_time))
             else:
                 pass
 
         dialog.destroy()
-        print("DBG: on_load_button_clicked")
 
     def update_statusbar(self, text):
+        """
+`       Set given text to statusbar
+        :param text: statusbar message
+        """
         self.statusbar.remove_all(self.statusbar_context_id)
         self.statusbar.push(self.statusbar_context_id, text)
 
@@ -226,8 +235,5 @@ class MainWindow(object):
                 self.filters_liststore.append([filtname, filtname])
         else:
             self.filters_liststore.append(['No filter found!', 'no_filter'])
-        self.comboboxfilter = self.builder.get_object('comboboxfilter')
         self.comboboxfilter.set_model(self.filters_liststore)
         self.comboboxfilter.set_active(0)
-        
-        print("DBG: update_filters_combobox")
