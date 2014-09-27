@@ -3,6 +3,8 @@ Graphics module. Consists of object which represent graphic objects.
 """
 import cairo
 import array
+from pygame import camera
+import pygame
 
 
 ARGB = 0
@@ -20,9 +22,7 @@ class Frame(object):
     """
 
     def __init__(self, data):
-        self.width = data.get_width()
-        self.height = data.get_height()
-        self.data = self._from_cairo_to_internal(data)
+        self.data, self.width, self.height = self._from_external_to_internal(data)
         self.color_format = data.get_format()
         self.pixel_width = COLOR_MODEL[self.color_format]['pixel_width']
 
@@ -32,14 +32,32 @@ class Frame(object):
 
         self.dirty = False
 
+    def _from_external_to_internal(self, data):
+        if isinstance(data, cairo.ImageSurface):
+            return self._from_cairo_to_internal(data)
+        elif isinstance(data, pygame.Surface):
+            return self._from_pygame_to_internal(data)
+
     @staticmethod
     def _from_cairo_to_internal(input_data):
         """
         Convert given cairo data to internal data
-        :param input_data: input cairo buffer
+        :param input_data: input cairo.ImageSurface
         """
         data = input_data.get_data()
-        return array.array('B', data.__str__())
+        width = input_data.get_width()
+        height = input_data.get_width()
+        return array.array('B', data.__str__()), width, height
+
+    @staticmethod
+    def _from_pygame_to_internal(input_data):
+        """
+        Convert given pygame data to internal data
+        :param input_data: input pygame.Surface
+        """
+        data = input_data.raw
+        width, height = input_data.get_size()
+        return array.array('B', data.__str__()), width, height
 
     def update_cairo(self, data_pointer):
         """
@@ -119,13 +137,51 @@ class Camera(object):
     TODO:
         convertColorModel()
         dumpImageInformation()
-        open()
         getFrame()
         getCameraInformation() -- or more methods
     """
 
-    def __init__(self):
-        pass
+    def __init__(self, device):
+        self.devicename = device
+        self.data = None
+        self.cairo_image_surface = None
+        pygame.init()
+        camera.init()
+        self.camera = camera.Camera(self.devicename)
+        self.width, self.height = self.camera.get_size()
+
+        self.camera.start()
+
+    def get_frame(self):
+        self.cairo_image_surface = \
+            cairo.ImageSurface.create_for_data(self.camera.get_buffer(), self.width, self.height, OUTPUT_COLOR_MODEL)
+        self.data = Frame(data=self.cairo_image_surface)
+
+    def stop(self):
+        self.camera.stop()
+        camera.quit()
+
+    @property
+    def cairo_data(self):
+        """
+        Property returning updated cairo buffer
+        """
+        if self.data.dirty:
+            self.data.update_cairo(self.cairo_image_surface.get_data())
+        return self.cairo_image_surface
+
+    @cairo_data.setter
+    def cairo_data(self, value):
+        """
+        Property setter for cairo_data
+        :param value: New cairo buffer to be set
+        """
+        self.cairo_image_surface = value
+
+
+def list_cameras():
+    camera.init()
+    return camera.list_cameras()
 
 
 class Video(object):

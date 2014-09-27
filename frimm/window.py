@@ -5,7 +5,7 @@ FRIMM module containing main window class
 import os
 
 from gi.repository import Gtk
-from graphics import Image
+from graphics import Image, Camera, list_cameras
 from config import Configuration
 from filters import Filters
 import time
@@ -246,7 +246,41 @@ class MainWindow(object):
         self.update_statusbar('Not implemented yet!')
 
     def on_load_stream_button_clicked(self, button):
-        self.update_statusbar('Not implemented yet!')
+        # self.update_statusbar('Not implemented yet!')
+        cameras = list_cameras()
+
+        if not cameras:
+            error = Gtk.MessageDialog(0, Gtk.MessageType.ERROR,
+                                      Gtk.ButtonsType.OK,
+                                      "No input stream found!")
+            return
+
+        dialog = Gtk.Dialog('Select input stream', self.window, 0,
+                            (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
+                             Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
+
+        stream_liststore = Gtk.ListStore(str, str)
+
+        for cam in cameras:
+            stream_liststore.append([cam, cam])
+
+        stream_combobox = Gtk.ComboBox.new_with_model_and_entry(stream_liststore)
+        stream_combobox.set_entry_text_column(1)
+        stream_combobox.set_active(0)
+        #import ipdb; ipdb.set_trace()
+        box = dialog.get_content_area()
+        box.add(stream_combobox)
+        #dialog.set_content_area(box)
+        box.show_all()
+
+        res = dialog.run()
+        if res == Gtk.ResponseType.OK:
+            tree_iter = stream_combobox.get_active_iter()
+            selected_name, selected_key = stream_liststore[tree_iter]
+            print selected_name
+        dialog.destroy()
+        #self.original_image = Camera(device='/dev/video0')
+        # self.original_image.
 
     def update_statusbar(self, text):
         """
