@@ -68,10 +68,6 @@ class MainWindow(object):
         self.comboboxfilter = \
             self.builder.get_object('comboboxfilter')
         self.filters_liststore = None
-        self.export_button = \
-            self.builder.get_object('export_button')
-        self.proceed_button = \
-            self.builder.get_object('proceed_button')
 
         self.update_filters_combobox()
 
@@ -214,7 +210,7 @@ class MainWindow(object):
 
         dialog.destroy()
 
-    def on_load_image_button_clicked(self, button):
+    def on_load_button_clicked(self, button):
         dialog = Gtk.FileChooserDialog(
             'Open file', self.window,
             Gtk.FileChooserAction.OPEN,
@@ -235,18 +231,10 @@ class MainWindow(object):
                 end_time = time.time()
                 self.update_statusbar(
                     "Total time to load: %f" % (end_time - start_time))
-                self.proceed_button.set_visible(True)
-                self.export_button.set_visible(True)
             else:
                 pass
 
         dialog.destroy()
-
-    def on_load_video_button_clicked(self, button):
-        self.update_statusbar('Not implemented yet!')
-
-    def on_load_stream_button_clicked(self, button):
-        self.update_statusbar('Not implemented yet!')
 
     def update_statusbar(self, text):
         """
